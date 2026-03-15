@@ -170,9 +170,43 @@ public class receiver {
     // ----------------------------------------------------------------
 
     private void handleBegin(InetAddress addr, int port, String[] tokens)
-            throws IOException {
-        // TODO
+        throws IOException {
+    String message = String.join(" ", tokens);
+    String[] parts = message.trim().split(" ");
+
+    if (parts.length != 5) {
+        sendReply(addr, port, "ERR malformed");
+        return;
     }
+
+    String transferId = parts[1];
+    String filename = parts[2];
+    int totalChunks;
+    String checksum = parts[4];
+
+    try {
+        totalChunks = Integer.parseInt(parts[3]);
+    } catch (NumberFormatException e) {
+        sendReply(addr, port, "ERR malformed");
+        return;
+    }
+
+    if (totalChunks < 0) {
+        sendReply(addr, port, "ERR malformed");
+        return;
+    }
+
+    Transfer t = new Transfer(transferId, filename, totalChunks, checksum);
+    Transfer existing = transfers.putIfAbsent(transferId, t);
+
+    if (existing != null) {
+        sendReply(addr, port, "ERR duplicate transfer");
+        return;
+    }
+
+    log("RECV %s BEGIN chunks=%d", transferId, totalChunks);
+    sendReply(addr, port, String.format("ACK %s BEGIN", transferId));
+}
 
     // ----------------------------------------------------------------
     //  handleData — process a DATA message
