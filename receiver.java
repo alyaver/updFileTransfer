@@ -304,7 +304,7 @@ public class receiver {
     // ----------------------------------------------------------------
     //  handleEnd — process an END message
     //
-    //  TODO: Implement this method.
+    //  TODO: Implement this method
     //
     //  Tokens: END <transfer_id>
     //
@@ -319,9 +319,31 @@ public class receiver {
     // ----------------------------------------------------------------
 
     private void handleEnd(InetAddress addr, int port, String[] tokens)
-            throws IOException {
-        // TODO
+        throws IOException {
+    if (tokens.length != 2) {
+        sendReply(addr, port, "ERR malformed");
+        return;
     }
+
+    String transferId = tokens[1];
+    Transfer t = transfers.get(transferId);
+
+    if (t == null) {
+        if (completed.contains(transferId)) {
+            sendReply(addr, port, String.format("ACK %s END", transferId));
+        } else {
+            sendReply(addr, port, "ERR unknown transfer");
+        }
+        return;
+    }
+
+    t.touch();
+    sendReply(addr, port, String.format("ACK %s END", transferId));
+
+    if (t.isComplete()) {
+        completeTransfer(t);
+    }
+}
 
     // ----------------------------------------------------------------
     //  completeTransfer — reassemble the file and verify the checksum
