@@ -147,8 +147,54 @@ public class receiver {
     // ----------------------------------------------------------------
 
     public void run() throws IOException {
-        // TODO
+    System.err.printf("[receiver] listening on port %d%n", socket.getLocalPort());
+    startCleanupThread();
+
+    byte[] buf = new byte[65535];
+
+    while (true) {
+        DatagramPacket pkt = new DatagramPacket(buf, buf.length);
+
+        try {
+            socket.receive(pkt);
+
+            String message = new String(pkt.getData(), 0, pkt.getLength()).trim();
+            InetAddress addr = pkt.getAddress();
+            int port = pkt.getPort();
+
+            vlog("recv from %s:%d: %s", addr, port, message);
+
+            String[] tokens = message.split(" ", 4);
+
+            if (tokens.length == 0 || tokens[0].isEmpty()) {
+                sendReply(addr, port, "ERR malformed");
+                continue;
+            }
+
+            String kind = tokens[0];
+
+            if (kind.equals("BEGIN")) {
+                handleBegin(addr, port, tokens);
+            } else if (kind.equals("DATA")) {
+                handleData(addr, port, tokens);
+            } else if (kind.equals("END")) {
+                handleEnd(addr, port, tokens);
+            } else {
+                sendReply(addr, port, "ERR malformed");
+            }
+        } catch (Exception e) {
+            try {
+                InetAddress addr = pkt.getAddress();
+                int port = pkt.getPort();
+                if (addr != null && port > 0) {
+                    sendReply(addr, port, "ERR malformed");
+                }
+            } catch (IOException ignored) {
+            }
+        }
     }
+}
+
 
     // ----------------------------------------------------------------
     //  handleBegin — process a BEGIN message
