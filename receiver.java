@@ -237,9 +237,69 @@ public class receiver {
     // ----------------------------------------------------------------
 
     private void handleData(InetAddress addr, int port, String[] tokens)
-            throws Exception {
-        // TODO
+        throws Exception {
+    if (tokens.length != 4) {
+        sendReply(addr, port, "ERR malformed");
+        return;
     }
+
+    String transferId = tokens[1];
+    String seqText = tokens[2];
+    String payload = tokens[3];
+
+    Transfer t = transfers.get(transferId);
+
+    int seqnum;
+    try {
+        seqnum = Integer.parseInt(seqText);
+    } catch (NumberFormatException e) {
+        sendReply(addr, port, "ERR malformed");
+        return;
+    }
+
+    if (t == null) {
+        if (completed.contains(transferId)) {
+            sendReply(addr, port, String.format("ACK %s %d", transferId, seqnum));
+        } else {
+            sendReply(addr, port, "ERR unknown transfer");
+        }
+        return;
+    }
+
+    if (seqnum < 0 || seqnum >= t.totalChunks) {
+        sendReply(addr, port, "ERR malformed");
+        return;
+    }
+
+    if (t.isDuplicate(seqnum)) {
+        log("DUP %s seq=%d", transferId, seqnum);
+        sendReply(addr, port, String.format("ACK %s %d", transferId, seqnum));
+        return;
+    }
+
+    byte[] chunkData;
+    try {
+        chunkData = Base64.getDecoder().decode(payload);
+    } catch (IllegalArgumentException e) {
+        sendReply(addr, port, "ERR malformed");
+        return;
+    }
+
+    boolean stored = t.storeChunk(seqnum, chunkData);
+    if (!stored) {
+        log("DUP %s seq=%d", transferId, seqnum);
+        sendReply(addr, port, String.format("ACK %s %d", transferId, seqnum));
+        return;
+    }
+
+    log("RECV %s DATA seq=%d", transferId, seqnum);
+    sendReply(addr, port, String.format("ACK %s %d", transferId, seqnum));
+
+    if (t.isComplete()) {
+        completeTransfer(t);
+    }
+}
+
 
     // ----------------------------------------------------------------
     //  handleEnd — process an END message
