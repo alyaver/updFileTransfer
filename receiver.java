@@ -340,8 +340,24 @@ public class receiver {
     // ----------------------------------------------------------------
 
     private void completeTransfer(Transfer t) {
-        // TODO
+    if (!transfers.remove(t.transferId, t)) {
+        return;
     }
+
+    String status = "FAIL";
+    try {
+        String computed = t.reassembleAndVerify();
+        if (computed.equals(t.expectedChecksum)) {
+            status = "OK";
+        }
+    } catch (Exception e) {
+        status = "FAIL";
+    }
+
+    log("COMPLETE %s file=%s status=%s", t.transferId, t.filename, status);
+
+    completed.add(t.transferId);
+}
 
     // ----------------------------------------------------------------
     //  Cleanup thread — provided, do not modify.
