@@ -171,21 +171,23 @@ public class receiver {
 
     private void handleBegin(InetAddress addr, int port, String[] tokens)
         throws IOException {
-    String message = String.join(" ", tokens);
-    String[] parts = message.trim().split(" ");
-
-    if (parts.length != 5) {
+    if (tokens.length != 4) {
         sendReply(addr, port, "ERR malformed");
         return;
     }
 
-    String transferId = parts[1];
-    String filename = parts[2];
-    int totalChunks;
-    String checksum = parts[4];
+    String transferId = tokens[1];
+    String filename = tokens[2];
 
+    String[] rest = tokens[3].trim().split(" ");
+    if (rest.length != 2) {
+        sendReply(addr, port, "ERR malformed");
+        return;
+    }
+
+    int totalChunks;
     try {
-        totalChunks = Integer.parseInt(parts[3]);
+        totalChunks = Integer.parseInt(rest[0]);
     } catch (NumberFormatException e) {
         sendReply(addr, port, "ERR malformed");
         return;
@@ -196,9 +198,10 @@ public class receiver {
         return;
     }
 
-    Transfer t = new Transfer(transferId, filename, totalChunks, checksum);
-    Transfer existing = transfers.putIfAbsent(transferId, t);
+    String checksum = rest[1];
 
+    Transfer created = new Transfer(transferId, filename, totalChunks, checksum);
+    Transfer existing = transfers.putIfAbsent(transferId, created);
     if (existing != null) {
         sendReply(addr, port, "ERR duplicate transfer");
         return;
