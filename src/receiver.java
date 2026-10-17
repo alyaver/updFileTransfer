@@ -8,7 +8,7 @@ import java.util.concurrent.*;
  * Reliable UDP file transfer receiver.
  *
  * Usage:
- *   java receiver.java [-v] <port>
+ *   java src/receiver.java [-v] <port>
  *
  * This receiver listens for UDP datagrams from the sender, reassembles
  * file chunks in order, and verifies the result via MD5 checksum.
@@ -495,7 +495,7 @@ public class receiver {
         }
 
         if (args.length - ai != 1) {
-            System.err.println("Usage: java receiver.java [-v] <port>");
+            System.err.println("Usage: java src/receiver.java [-v] <port>");
             System.exit(1);
         }
 

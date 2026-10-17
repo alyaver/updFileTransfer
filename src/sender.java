@@ -8,7 +8,7 @@ import java.util.*;
  * UDP file sender with configurable loss and reorder simulation.
  *
  * Usage:
- *   java sender.java [-v] <host> <port> <file> <loss%> <reorder%> <dup%>
+ *   java src/sender.java [-v] <host> <port> <file> <loss%> <reorder%> <dup%>
  *
  * The sender splits the file into 1000-byte chunks, base64-encodes each,
  * and sends them as UDP datagrams using a stop-and-wait protocol.
@@ -231,7 +231,7 @@ public class sender {
 
         if (args.length - ai != 6) {
             System.err.println(
-                "Usage: java sender.java [-v] <host> <port> <file> <loss%> <reorder%> <dup%>");
+                "Usage: java src/sender.java [-v] <host> <port> <file> <loss%> <reorder%> <dup%>");
             System.exit(1);
         }
 

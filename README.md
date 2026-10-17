@@ -5,9 +5,10 @@ The server listens for incoming UDP packets from a client and reconstructs the t
 
 ## Files
 
-- `receiver.java` – The UDP server that receives packets and writes the file.
-- `sender.java` – A simple client used to manually test sending a file.
-- `tsender.java` – A testing client that sends multiple connections quickly to test performance and safety.
+- `src/receiver.java` – The UDP server that receives packets and writes the file.
+- `src/sender.java` – A simple client used to manually test sending a file.
+- `data/testfile.txt` – Sample file to transfer.
+- `test/tsender.java` – A testing client that sends multiple connections quickly to test performance and safety.
 
 ## How It Works
 
@@ -20,5 +21,13 @@ The server listens for incoming UDP packets from a client and reconstructs the t
 Compile the programs:
 
 ```bash
-javac receiver.java
-javac sender.java
+javac -d out src/receiver.java src/sender.java test/tsender.java
+```
+
+Or run directly from source (no compile step):
+
+```bash
+java src/receiver.java [-v] <port>
+java src/sender.java [-v] <host> <port> data/testfile.txt <loss%> <reorder%> <dup%>
+java test/tsender.java <host> <port> <loss%> <reorder%> <dup%> auto
+```

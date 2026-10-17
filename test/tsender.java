@@ -10,7 +10,7 @@ import java.util.concurrent.*;
  * and reports PASS/FAIL per transfer.
  *
  * Usage:
- *   java tsender.java <host> <port> <loss%> <reorder%> <dup%> <file1> [file2 ...]
+ *   java test/tsender.java <host> <port> <loss%> <reorder%> <dup%> <file1> [file2 ...]
  *
  * Use 'auto' as a filename to generate small/medium/large test files.
  */
@@ -266,7 +266,7 @@ public class tsender {
     public static void main(String[] args) throws Exception {
         if (args.length < 6) {
             System.err.println(
-                "Usage: java tsender.java <host> <port> <loss%> <reorder%> <dup%> <file1> [file2 ...]");
+                "Usage: java test/tsender.java <host> <port> <loss%> <reorder%> <dup%> <file1> [file2 ...]");
             System.err.println(
                 "       Use 'auto' as file to generate test files automatically.");
             System.exit(1);
